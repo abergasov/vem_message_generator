@@ -12,6 +12,7 @@ import (
 	"vem_message_generator/pkg/entities"
 	"vem_message_generator/pkg/utils"
 
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/google/uuid"
@@ -60,14 +61,19 @@ func main() {
 		log.Fatal("failed to get client address: ", err)
 	}
 
+	signature := sign(privateKeyECDSA, string(generatedVemRequest))
 	signedContainer, err := json.Marshal(entities.VEMRequestContainer{
 		VemRequestID:        uuid.New(),
 		VemRequest:          string(generatedVemRequest),
-		VemRequestSignature: sign(privateKeyECDSA, string(generatedVemRequest)),
+		VemRequestSignature: signature,
 		VemRequestSignedBy:  clientAddress.String(),
 	})
 	if err != nil {
 		log.Fatal("failed to marshal signed container: ", err)
+	}
+	signedBy := checkSign(signature, string(generatedVemRequest))
+	if signedBy != clientAddress.String() {
+		log.Fatal("signatures mismatch")
 	}
 	log.Println("======= VEM REQUEST SIGNATURE =======")
 	log.Println("vem request signature: ", string(signedContainer))
@@ -82,4 +88,13 @@ func sign(privateKeyECDSA *ecdsa.PrivateKey, payload string) string {
 		log.Fatal("failed to sign data: ", err)
 	}
 	return hexutil.Encode(signedData)
+}
+
+func checkSign(signature, payload string) string {
+	hash := crypto.Keccak256Hash([]byte(payload))
+	pkSign, err := crypto.SigToPub(hash[:], common.FromHex(signature))
+	if err != nil {
+		log.Fatal("failed to recover public key from signature: ", err)
+	}
+	return crypto.PubkeyToAddress(*pkSign).String()
 }
