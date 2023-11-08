@@ -12,7 +12,6 @@ import (
 	"vem_message_generator/pkg/entities"
 	"vem_message_generator/pkg/utils"
 
-	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/google/uuid"
@@ -24,12 +23,6 @@ var (
 )
 
 func main() {
-	privateKeyECDSA1, err := crypto.GenerateKey()
-	// encode to hex private key
-	privateKeyECDSA1Bytes := crypto.FromECDSA(privateKeyECDSA1)
-	aa := common.Bytes2Hex(privateKeyECDSA1Bytes)
-	println(aa)
-
 	flag.Parse()
 	validatorsPubKeys := strings.Split(*validatorsList, ",")
 	if len(validatorsPubKeys) == 0 {
