@@ -61,7 +61,7 @@ func main() {
 	if err != nil {
 		log.Fatal("failed to decrypt vem payload: ", err)
 	}
-	log.Println("decrypted vem payload: ", decryptedVemPayload)
+	log.Println("decrypted vem payload: ", string(decryptedVemPayload))
 }
 
 func generateVEMRequest() {
